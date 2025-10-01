@@ -8,3 +8,6 @@ After install:
 - Modbus TCP server on port 1502 (unit 1)
 
 Edit api/server.js or modbus/modbus-server.js as needed.
+
+
+git clone https://github.com/Phiyut/Remote-I-O.git
