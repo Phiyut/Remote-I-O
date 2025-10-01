@@ -1,0 +1,20 @@
+# Node
+node_modules/
+npm-debug.log*
+yarn.lock
+pnpm-lock.yaml
+
+# Builds / Bundles
+dist/
+build/
+.tmp/
+.cache/
+
+# Env / credentials
+.env
+.env.*
+*.local
+
+# OS junk
+.DS_Store
+Thumbs.db
