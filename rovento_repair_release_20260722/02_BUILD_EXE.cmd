@@ -23,9 +23,12 @@ if exist dist rmdir /s /q dist
 python -m PyInstaller --clean --noconfirm ROVENTO-Repair-WebApp.spec
 if errorlevel 1 goto :fail
 if not exist "dist\ROVENTO-Repair-WebApp\ROVENTO-Repair-WebApp.exe" goto :fail
+copy /y "start.bat" "dist\ROVENTO-Repair-WebApp\start.bat" >nul
+if errorlevel 1 goto :fail
 echo.
 echo BUILD EXE SUCCESS
 echo %CD%\dist\ROVENTO-Repair-WebApp\ROVENTO-Repair-WebApp.exe
+echo %CD%\dist\ROVENTO-Repair-WebApp\start.bat
 if not defined BUILD_NO_PAUSE pause
 exit /b 0
 :fail
