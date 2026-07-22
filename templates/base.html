@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}{{ app_name }}{% endblock %}</title>
+  <style>
+    :root{--blue:#1457d9;--blue2:#0d3f9e;--bg:#f3f6fa;--surface:#fff;--border:#dce3ec;--text:#172033;--muted:#64748b;--success:#14804a;--warning:#b65c00;--danger:#c93232;--radius:12px;--shadow:0 6px 20px rgba(15,23,42,.07)}
+    *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,"Noto Sans Thai",Segoe UI,Arial,sans-serif;font-size:14px}
+    a{color:inherit;text-decoration:none} button,input,select,textarea{font:inherit}
+    .topbar{height:64px;background:#fff;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 24px;position:sticky;top:0;z-index:10}
+    .brand{font-size:18px;font-weight:800;color:var(--blue)} .brand small{color:var(--muted);font-size:12px;margin-left:8px;font-weight:600}
+    .top-actions{display:flex;align-items:center;gap:10px}.user{padding:8px 12px;border:1px solid var(--border);border-radius:10px;background:#f8fafc}
+    .shell{display:grid;grid-template-columns:230px 1fr;min-height:calc(100vh - 64px)}
+    .sidebar{background:#fff;border-right:1px solid var(--border);padding:18px 12px}.nav-title{font-size:11px;text-transform:uppercase;color:var(--muted);padding:8px 12px}.nav a{display:block;padding:10px 12px;border-radius:9px;margin-bottom:5px;font-weight:650}.nav a:hover,.nav a.active{background:#eaf1ff;color:var(--blue)}
+    .main{padding:24px;min-width:0}.page-title{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:18px}.page-title h1{margin:0;font-size:26px}.page-title p{margin:4px 0 0;color:var(--muted)}
+    .grid{display:grid;gap:16px}.grid-4{grid-template-columns:repeat(4,minmax(0,1fr))}.grid-2{grid-template-columns:repeat(2,minmax(0,1fr))}
+    .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px}.metric-value{font-size:30px;font-weight:800;margin-top:7px}.metric-label{color:var(--muted);font-weight:650}
+    .form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.field{display:flex;flex-direction:column;gap:6px}.field.full{grid-column:1/-1}.field label{font-weight:700;font-size:13px}.field input,.field select,.field textarea{width:100%;border:1px solid #cbd5e1;border-radius:9px;padding:10px 11px;background:#fff;outline:none}.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(20,87,217,.12)}
+    .btn{border:0;border-radius:9px;padding:10px 14px;font-weight:750;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:6px}.btn-primary{background:var(--blue);color:#fff}.btn-primary:hover{background:var(--blue2)}.btn-secondary{background:#eef2f7;color:#263245;border:1px solid var(--border)}.btn-danger{background:#feecec;color:var(--danger);border:1px solid #f7caca}.btn-success{background:#e7f7ee;color:var(--success);border:1px solid #bfe5cf}.btn:disabled{opacity:.6;cursor:not-allowed}
+    .toolbar{display:flex;gap:10px;align-items:center;justify-content:space-between;margin-bottom:12px}.table-wrap{overflow:auto;border:1px solid var(--border);border-radius:10px}.table{width:100%;border-collapse:collapse;min-width:900px}.table th{background:#f8fafc;text-align:left;padding:11px;border-bottom:1px solid var(--border);font-size:12px;color:#475569;position:sticky;top:0}.table td{padding:11px;border-bottom:1px solid #edf1f5;vertical-align:top}.table tr:last-child td{border-bottom:0}
+    .badge{display:inline-flex;border-radius:999px;padding:4px 9px;font-size:12px;font-weight:750;background:#eef2f7}.badge.Open{background:#e7f0ff;color:#174ea6}.badge.InProgress{background:#fff3db;color:#9a5600}.badge.Done{background:#e5f7ed;color:#147647}.badge.Cancelled{background:#f1f3f5;color:#667085}.badge.High,.badge.Critical{background:#fee9e7;color:#b42318}
+    .notice{padding:12px 14px;border-radius:9px;margin-bottom:14px;border:1px solid}.notice.error{background:#fff0f0;border-color:#f6cccc;color:#a61b1b}.notice.success{background:#edf9f2;border-color:#c4e7d2;color:#146b3a}.notice.warning{background:#fff7e8;border-color:#f3d59c;color:#895000}.notice.info{background:#edf4ff;border-color:#c9dafb;color:#174ea6}
+    .status-box{border:1px solid var(--border);border-radius:10px;padding:14px;background:#f8fafc}.status-line{display:flex;justify-content:space-between;gap:20px;padding:5px 0}.muted{color:var(--muted)}.hidden{display:none!important}
+    .login-page{min-height:100vh;display:grid;place-items:center;background:linear-gradient(135deg,#edf3ff,#f7f9fc)}.login-card{width:min(430px,calc(100vw - 32px));background:#fff;border:1px solid var(--border);border-radius:16px;padding:28px;box-shadow:0 18px 50px rgba(15,23,42,.12)}.login-card h1{margin:0;color:var(--blue)}
+    @media(max-width:1000px){.grid-4{grid-template-columns:repeat(2,1fr)}.shell{grid-template-columns:1fr}.sidebar{display:none}}
+    @media(max-width:650px){.main{padding:14px}.grid-4,.grid-2,.form-grid{grid-template-columns:1fr}.field.full{grid-column:auto}.topbar{padding:0 14px}.user{display:none}}
+  </style>
+</head>
+<body>
+{% if session.get('username') %}
+<header class="topbar">
+  <div class="brand">ROVENTO <small>Repair WebApp</small></div>
+  <div class="top-actions"><span class="user">{{ session.get('display_name') }} · {{ session.get('role') }}</span><a class="btn btn-secondary" href="{{ url_for('logout') }}">ออกจากระบบ</a></div>
+</header>
+<div class="shell">
+  <aside class="sidebar">
+    <div class="nav-title">Workspace</div>
+    <nav class="nav">
+      <a href="{{ url_for('index') }}">Repair Tickets</a>
+      {% if session.get('role') == 'admin' %}<a href="{{ url_for('admin_database') }}">Admin · Database</a>{% endif %}
+    </nav>
+    <div class="nav-title">System</div>
+    <div style="padding:8px 12px;color:var(--muted);font-size:12px">Server data: ProgramData\ROVENTO\Repair WebApp</div>
+  </aside>
+  <main class="main">
+    {% with messages = get_flashed_messages(with_categories=true) %}{% for category,message in messages %}<div class="notice {{ category }}">{{ message }}</div>{% endfor %}{% endwith %}
+    {% block content %}{% endblock %}
+  </main>
+</div>
+{% else %}{% block login_content %}{% endblock %}{% endif %}
+{% block scripts %}{% endblock %}
+</body>
+</html>

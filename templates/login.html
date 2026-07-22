@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Login · {{ app_name }}{% endblock %}
+{% block login_content %}
+<div class="login-page">
+  <form class="login-card" method="post">
+    <h1>ROVENTO</h1>
+    <p class="muted" style="margin-top:6px">Repair WebApp · Production Server</p>
+    {% with messages = get_flashed_messages(with_categories=true) %}{% for category,message in messages %}<div class="notice {{ category }}">{{ message }}</div>{% endfor %}{% endwith %}
+    <div class="field" style="margin-top:18px"><label>Username</label><input name="username" autocomplete="username" required autofocus></div>
+    <div class="field" style="margin-top:13px"><label>Password</label><input type="password" name="password" autocomplete="current-password" required></div>
+    <button class="btn btn-primary" style="width:100%;margin-top:18px" type="submit">เข้าสู่ระบบ</button>
+    <div class="notice warning" style="margin-top:16px;margin-bottom:0">บัญชีเริ่มต้น: <b>admin</b> / <b>admin123</b><br>กรุณาเปลี่ยนรหัสผ่านหลังเข้าใช้งานครั้งแรก</div>
+  </form>
+</div>
+{% endblock %}

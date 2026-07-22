@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Repair Tickets · {{ app_name }}{% endblock %}
+{% block content %}
+<div class="page-title"><div><h1>Repair Tickets</h1><p>บันทึก ติดตาม และอัปเดตงานซ่อมจากฐานข้อมูลส่วนกลาง</p></div><button class="btn btn-primary" onclick="toggleForm(true)">+ สร้าง Ticket</button></div>
+<div class="grid grid-4" style="margin-bottom:16px">
+  <div class="card"><div class="metric-label">ทั้งหมด</div><div class="metric-value" id="m-total">0</div></div>
+  <div class="card"><div class="metric-label">Open</div><div class="metric-value" id="m-open">0</div></div>
+  <div class="card"><div class="metric-label">In Progress</div><div class="metric-value" id="m-progress">0</div></div>
+  <div class="card"><div class="metric-label">Done</div><div class="metric-value" id="m-done">0</div></div>
+</div>
+<div class="card hidden" id="ticket-form-card" style="margin-bottom:16px">
+  <div class="toolbar"><div><b id="form-heading">สร้าง Repair Ticket</b><div class="muted">ข้อมูลจะถูกบันทึกลงฐานข้อมูลที่ Admin เลือก</div></div><button class="btn btn-secondary" onclick="toggleForm(false)">ปิด</button></div>
+  <form id="ticket-form" class="form-grid">
+    <input type="hidden" id="ticket-id">
+    <div class="field"><label>หัวข้องาน *</label><input id="title" required maxlength="250"></div>
+    <div class="field"><label>ผู้แจ้ง *</label><input id="requester" required maxlength="150"></div>
+    <div class="field"><label>แผนก</label><input id="department" maxlength="150"></div>
+    <div class="field"><label>Priority</label><select id="priority"><option>Low</option><option selected>Normal</option><option>High</option><option>Critical</option></select></div>
+    <div class="field"><label>Status</label><select id="status"><option>Open</option><option>In Progress</option><option>Done</option><option>Cancelled</option></select></div>
+    <div class="field full"><label>รายละเอียด</label><textarea id="detail" rows="4"></textarea></div>
+    <div class="field full" style="flex-direction:row;justify-content:flex-end"><button type="button" class="btn btn-secondary" onclick="toggleForm(false)">ยกเลิก</button><button class="btn btn-primary" type="submit">บันทึก</button></div>
+  </form>
+</div>
+<div class="card">
+  <div class="toolbar"><div><b>รายการงานซ่อม</b><div class="muted" id="record-count">0 รายการ</div></div><div style="display:flex;gap:8px"><input id="search" placeholder="ค้นหา Ticket..." style="border:1px solid var(--border);border-radius:9px;padding:9px 11px" oninput="render()"><button class="btn btn-secondary" onclick="loadTickets()">Refresh</button></div></div>
+  <div id="message"></div>
+  <div class="table-wrap"><table class="table"><thead><tr><th>Ticket</th><th>หัวข้อ</th><th>ผู้แจ้ง / แผนก</th><th>Priority</th><th>Status</th><th>Updated</th><th>Action</th></tr></thead><tbody id="ticket-body"></tbody></table></div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+let tickets=[];
+const $=id=>document.getElementById(id);
+function esc(v){return String(v??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));}
+function notice(text,type='info'){$('message').innerHTML=`<div class="notice ${type}">${esc(text)}</div>`;setTimeout(()=>{$('message').innerHTML=''},3500)}
+function toggleForm(show,item=null){$('ticket-form-card').classList.toggle('hidden',!show);if(!show){$('ticket-form').reset();$('ticket-id').value='';return} $('form-heading').textContent=item?'แก้ไข Repair Ticket':'สร้าง Repair Ticket';$('ticket-id').value=item?.id||'';$('title').value=item?.title||'';$('requester').value=item?.requester||'';$('department').value=item?.department||'';$('priority').value=item?.priority||'Normal';$('status').value=item?.status||'Open';$('detail').value=item?.detail||'';window.scrollTo({top:0,behavior:'smooth'});}
+async function api(url,opt={}){const res=await fetch(url,{headers:{'Content-Type':'application/json'},...opt});const data=await res.json();if(!res.ok)throw new Error(data.message||'Request failed');return data;}
+async function loadTickets(){try{const data=await api('/api/tickets');tickets=data.items;render()}catch(e){notice(e.message,'error')}}
+function render(){const q=$('search').value.toLowerCase();const rows=tickets.filter(t=>[t.ticket_no,t.title,t.requester,t.department,t.status,t.priority].join(' ').toLowerCase().includes(q));$('record-count').textContent=`${rows.length} รายการ`;$('ticket-body').innerHTML=rows.map(t=>`<tr><td><b>${esc(t.ticket_no)}</b><div class="muted">${esc(t.created_at.replace('T',' '))}</div></td><td><b>${esc(t.title)}</b><div class="muted">${esc(t.detail).slice(0,90)}</div></td><td>${esc(t.requester)}<div class="muted">${esc(t.department)}</div></td><td><span class="badge ${esc(t.priority)}">${esc(t.priority)}</span></td><td><span class="badge ${esc(t.status.replace(' ',''))}">${esc(t.status)}</span></td><td>${esc(t.updated_at.replace('T',' '))}</td><td><button class="btn btn-secondary" onclick="editTicket(${t.id})">แก้ไข</button> <button class="btn btn-danger" onclick="removeTicket(${t.id})">ลบ</button></td></tr>`).join('')||'<tr><td colspan="7" class="muted" style="text-align:center;padding:30px">ยังไม่มีข้อมูล</td></tr>';$('m-total').textContent=tickets.length;$('m-open').textContent=tickets.filter(t=>t.status==='Open').length;$('m-progress').textContent=tickets.filter(t=>t.status==='In Progress').length;$('m-done').textContent=tickets.filter(t=>t.status==='Done').length;}
+function editTicket(id){toggleForm(true,tickets.find(t=>t.id===id));}
+async function removeTicket(id){if(!confirm('ยืนยันการลบ Ticket นี้?'))return;try{await api(`/api/tickets/${id}`,{method:'DELETE'});notice('ลบ Ticket แล้ว','success');loadTickets()}catch(e){notice(e.message,'error')}}
+$('ticket-form').addEventListener('submit',async e=>{e.preventDefault();const id=$('ticket-id').value;const body={title:$('title').value,requester:$('requester').value,department:$('department').value,priority:$('priority').value,status:$('status').value,detail:$('detail').value};try{await api(id?`/api/tickets/${id}`:'/api/tickets',{method:id?'PUT':'POST',body:JSON.stringify(body)});toggleForm(false);notice('บันทึกข้อมูลสำเร็จ','success');loadTickets()}catch(err){notice(err.message,'error')}});
+loadTickets();
+</script>
+{% endblock %}

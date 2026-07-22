@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}Database Settings · {{ app_name }}{% endblock %}
+{% block content %}
+<div class="page-title"><div><h1>Database Connection</h1><p>ตั้งค่าฐานข้อมูลส่วนกลาง ทดสอบก่อนบันทึก และสลับ Connection โดยไม่ต้อง Build EXE ใหม่</p></div><button class="btn btn-secondary" onclick="refreshStatus()">Refresh Status</button></div>
+<div id="message"></div>
+<div class="grid grid-2">
+  <section class="card">
+    <h3 style="margin-top:0">Connection Settings</h3>
+    <div class="form-grid">
+      <div class="field"><label>Database Type</label><select id="type" onchange="toggleDbType()"><option value="sqlite">SQLite</option><option value="mssql">Microsoft SQL Server</option></select></div>
+      <div class="field"><label>Connection Timeout</label><input id="timeout" type="number" min="1" value="8"></div>
+      <div id="sqlite-fields" class="field full"><label>SQLite Database Path</label><input id="sqlite_path"></div>
+      <div id="mssql-fields" class="field full">
+        <div class="form-grid">
+          <div class="field"><label>Server / IP</label><input id="server" placeholder="192.168.1.10"></div>
+          <div class="field"><label>Port</label><input id="port" type="number" value="1433"></div>
+          <div class="field"><label>Database Name</label><input id="database"></div>
+          <div class="field"><label>Username</label><input id="username"></div>
+          <div class="field"><label>Password</label><input id="password" type="password" placeholder="เว้นว่างเพื่อใช้รหัสเดิม"></div>
+          <div class="field"><label>ODBC Driver</label><select id="driver"><option>ODBC Driver 18 for SQL Server</option><option>ODBC Driver 17 for SQL Server</option></select></div>
+          <label><input type="checkbox" id="encrypt"> Encrypt connection</label>
+          <label><input type="checkbox" id="trust_certificate"> Trust server certificate</label>
+        </div>
+      </div>
+      <div class="field full" style="flex-direction:row;justify-content:flex-end"><button class="btn btn-secondary" onclick="testConnection()" type="button">Test Connection</button><button class="btn btn-primary" onclick="saveConnection()" type="button">Save & Activate</button></div>
+    </div>
+  </section>
+  <section class="card">
+    <h3 style="margin-top:0">Current Status</h3>
+    <div class="status-box" id="status-box">Loading...</div>
+    <div class="notice warning" style="margin-top:15px">เมื่อเปลี่ยนฐานข้อมูล ระบบจะสร้าง Table ที่จำเป็นในฐานข้อมูลปลายทางอัตโนมัติ ข้อมูลจากฐานข้อมูลเดิมจะไม่ถูกย้ายอัตโนมัติ</div>
+    <hr style="border:0;border-top:1px solid var(--border);margin:20px 0">
+    <h3>Change Admin Password</h3>
+    <div class="field"><label>Current Password</label><input type="password" id="old_password"></div>
+    <div class="field" style="margin-top:10px"><label>New Password</label><input type="password" id="new_password" minlength="8"></div>
+    <button class="btn btn-secondary" style="margin-top:12px" onclick="changePassword()">Change Password</button>
+  </section>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+const initial={{ config|tojson }};
+const $=id=>document.getElementById(id);
+function esc(v){return String(v??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));}
+function notice(text,type='info'){$('message').innerHTML=`<div class="notice ${type}">${esc(text)}</div>`;setTimeout(()=>{$('message').innerHTML=''},5000)}
+function loadInitial(){for(const k of ['type','sqlite_path','server','port','database','username','driver','timeout'])if($(k))$(k).value=initial[k]??'';$('encrypt').checked=!!initial.encrypt;$('trust_certificate').checked=!!initial.trust_certificate;toggleDbType();refreshStatus()}
+function toggleDbType(){$('sqlite-fields').classList.toggle('hidden',$('type').value!=='sqlite');$('mssql-fields').classList.toggle('hidden',$('type').value!=='mssql')}
+function payload(){return {type:$('type').value,sqlite_path:$('sqlite_path').value,server:$('server').value,port:Number($('port').value||1433),database:$('database').value,username:$('username').value,password:$('password').value,driver:$('driver').value,encrypt:$('encrypt').checked,trust_certificate:$('trust_certificate').checked,timeout:Number($('timeout').value||8)}}
+async function call(url,body=null){const res=await fetch(url,{method:body?'POST':'GET',headers:{'Content-Type':'application/json'},body:body?JSON.stringify(body):undefined});const data=await res.json();if(!res.ok)throw new Error(data.message||'Request failed');return data}
+async function testConnection(){try{notice('กำลังทดสอบการเชื่อมต่อ...');const d=await call('/api/admin/database/test',payload());notice(d.message,'success')}catch(e){notice(e.message,'error')}}
+async function saveConnection(){if(!confirm('บันทึกและเปลี่ยนฐานข้อมูลที่ระบบใช้งานทันที?'))return;try{const d=await call('/api/admin/database/save',payload());$('password').value='';notice(d.message,'success');renderStatus(d.status)}catch(e){notice(e.message,'error')}}
+async function refreshStatus(){try{const d=await call('/api/admin/database/status');renderStatus(d.status)}catch(e){notice(e.message,'error')}}
+function summary(c){if(!c)return '-';return c.type==='sqlite'?`SQLite · ${c.sqlite_path}`:`MSSQL · ${c.server}:${c.port} / ${c.database}`}
+function renderStatus(s){$('status-box').innerHTML=`<div class="status-line"><b>Connection</b><span>${s.connected?'Connected':'Disconnected'}</span></div><div class="status-line"><b>Active</b><span>${esc(summary(s.active))}</span></div><div class="status-line"><b>Configured</b><span>${esc(summary(s.configured))}</span></div><div class="status-line"><b>Fallback Mode</b><span>${s.using_fallback?'Yes':'No'}</span></div><div class="status-line"><b>Last Check</b><span>${esc(s.checked_at)}</span></div>${s.last_error?`<div class="notice error" style="margin-top:10px;margin-bottom:0">${esc(s.last_error)}</div>`:''}`}
+async function changePassword(){try{const d=await call('/api/admin/change-password',{old_password:$('old_password').value,new_password:$('new_password').value});$('old_password').value='';$('new_password').value='';notice(d.message,'success')}catch(e){notice(e.message,'error')}}
+loadInitial();
+</script>
+{% endblock %}
