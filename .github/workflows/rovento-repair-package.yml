@@ -10,8 +10,6 @@ on:
 permissions:
   contents: read
 
-actions:
-
 jobs:
   validate-and-package:
     runs-on: ubuntu-latest
