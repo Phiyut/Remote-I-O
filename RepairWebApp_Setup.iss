@@ -3,7 +3,6 @@
 #define MyAppPublisher "Supavut Industry Co., Ltd."
 #define MyAppExeName "ROVENTO-Repair-Server.exe"
 #define MyAppPort "5058"
-#define MyTaskName "ROVENTO Repair WebApp Server"
 #define MyFirewallName "ROVENTO Repair WebApp TCP 5058"
 
 [Setup]
@@ -39,16 +38,16 @@ Name: "{autoprograms}\{#MyAppName}"; Filename: "{cmd}"; Parameters: "/c start ""
 Name: "{autoprograms}\Start {#MyAppName} Server"; Filename: "{app}\{#MyAppExeName}"; Parameters: "--no-browser"; WorkingDir: "{app}"
 Name: "{autodesktop}\{#MyAppName}"; Filename: "{cmd}"; Parameters: "/c start """" ""http://127.0.0.1:{#MyAppPort}/"""; Tasks: desktopicon
 
+[Registry]
+Root: HKCU; Subkey: "Software\Microsoft\Windows\CurrentVersion\Run"; ValueType: string; ValueName: "ROVENTORepairWebApp"; ValueData: """{app}\{#MyAppExeName}"" --no-browser"; Tasks: autostart; Flags: uninsdeletevalue
+
 [Run]
-Filename: "{sys}\schtasks.exe"; Parameters: "/Delete /TN ""{#MyTaskName}"" /F"; Flags: runhidden waituntilterminated; Tasks: autostart
-Filename: "{sys}\schtasks.exe"; Parameters: "/Create /TN ""{#MyTaskName}"" /SC ONLOGON /RL HIGHEST /TR ""'""{app}\{#MyAppExeName}"" --no-browser'"" /F"; Flags: runhidden waituntilterminated; Tasks: autostart
 Filename: "{sys}\netsh.exe"; Parameters: "advfirewall firewall delete rule name=""{#MyFirewallName}"""; Flags: runhidden waituntilterminated; Tasks: lanfirewall
 Filename: "{sys}\netsh.exe"; Parameters: "advfirewall firewall add rule name=""{#MyFirewallName}"" dir=in action=allow protocol=TCP localport={#MyAppPort} profile=any"; Flags: runhidden waituntilterminated; Tasks: lanfirewall
 Filename: "{app}\{#MyAppExeName}"; Description: "Start {#MyAppName}"; Flags: nowait postinstall skipifsilent
 
 [UninstallRun]
 Filename: "{sys}\taskkill.exe"; Parameters: "/F /IM ""{#MyAppExeName}"""; Flags: runhidden waituntilterminated
-Filename: "{sys}\schtasks.exe"; Parameters: "/Delete /TN ""{#MyTaskName}"" /F"; Flags: runhidden waituntilterminated
 Filename: "{sys}\netsh.exe"; Parameters: "advfirewall firewall delete rule name=""{#MyFirewallName}"""; Flags: runhidden waituntilterminated
 
 [Code]
