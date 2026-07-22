@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>{{ app_name }}</title>
+  <style>
+    :root{--blue:#2563eb;--blue2:#1d4ed8;--bg:#f5f7fb;--card:#fff;--line:#e2e8f0;--text:#0f172a;--muted:#64748b;--green:#16a34a;--orange:#ea580c;--red:#dc2626;--radius:14px}
+    *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,"Segoe UI",Tahoma,sans-serif}button,input,select,textarea{font:inherit}button{cursor:pointer}
+    header{position:sticky;top:0;z-index:20;background:#0f172a;color:#fff;padding:14px 22px;display:flex;align-items:center;justify-content:space-between;gap:16px;box-shadow:0 4px 18px #0002}
+    .brand b{font-size:20px}.brand small{display:block;color:#cbd5e1;margin-top:2px}.head-right{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+    .btn{border:0;border-radius:10px;padding:9px 13px;font-weight:700;background:#e2e8f0;color:#0f172a}.btn:hover{filter:brightness(.97)}.primary{background:var(--blue);color:#fff}.success{background:var(--green);color:#fff}.warn{background:var(--orange);color:#fff}.danger{background:var(--red);color:#fff}.dark{background:#1e293b;color:#fff}.outline{background:#fff;border:1px solid var(--line)}
+    .layout{display:grid;grid-template-columns:245px minmax(0,1fr);min-height:calc(100vh - 70px)}aside{background:#fff;border-right:1px solid var(--line);padding:18px;position:sticky;top:70px;height:calc(100vh - 70px)}
+    .nav-btn{width:100%;border:0;background:transparent;text-align:left;padding:11px 12px;border-radius:10px;margin:3px 0;font-weight:700;color:#334155}.nav-btn.active{background:#dbeafe;color:#1d4ed8}.nav-btn.admin-only{display:none}
+    main{padding:22px;min-width:0}.page{display:none}.page.active{display:block}.title-row{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:16px}.title-row h1{font-size:25px;margin:0}.muted{color:var(--muted)}
+    .grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:16px}.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:18px;box-shadow:0 8px 28px #0f172a0d}.span4{grid-column:span 4}.span5{grid-column:span 5}.span6{grid-column:span 6}.span7{grid-column:span 7}.span8{grid-column:span 8}.span12{grid-column:span 12}
+    label{display:block;font-size:13px;font-weight:800;margin:11px 0 5px}input,select,textarea{width:100%;padding:10px 11px;border:1px solid #cbd5e1;border-radius:10px;background:#fff}textarea{min-height:90px;resize:vertical}.row{display:flex;gap:9px;align-items:center;flex-wrap:wrap}.actions{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;margin-top:14px}
+    .metric strong{font-size:30px;display:block;margin-top:7px}.metric .label{color:var(--muted);font-weight:700}.table-wrap{overflow:auto;border:1px solid var(--line);border-radius:12px}table{width:100%;border-collapse:collapse;min-width:920px}th,td{padding:10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;font-size:13px}th{background:#f8fafc;position:sticky;top:0;z-index:1}.badge{display:inline-block;padding:5px 9px;border-radius:999px;font-size:12px;font-weight:800;background:#e2e8f0}.New{background:#e2e8f0}.Accepted,.InProgress{background:#dbeafe;color:#1d4ed8}.HelpRequested{background:#fee2e2;color:#991b1b}.WaitingUserConfirm{background:#fef3c7;color:#92400e}.UserConfirmedDone,.Closed{background:#dcfce7;color:#166534}.Rejected{background:#ffedd5;color:#9a3412}
+    .toast{position:fixed;right:18px;bottom:18px;z-index:100;background:#0f172a;color:#fff;padding:12px 16px;border-radius:11px;display:none;max-width:420px;box-shadow:0 12px 28px #0003}.login-card{max-width:470px;margin:35px auto}.status-box{border:1px solid var(--line);border-radius:12px;padding:14px;background:#f8fafc}.status-ok{border-color:#86efac;background:#f0fdf4}.status-bad{border-color:#fca5a5;background:#fef2f2}.hidden{display:none!important}.code{font-family:Consolas,monospace;font-size:12px;background:#f1f5f9;padding:2px 5px;border-radius:5px}
+    @media(max-width:950px){.layout{grid-template-columns:1fr}aside{position:static;height:auto;border-right:0;border-bottom:1px solid var(--line);display:flex;gap:6px;overflow:auto;padding:10px}.nav-btn{width:auto;white-space:nowrap}.grid{grid-template-columns:1fr}.span4,.span5,.span6,.span7,.span8,.span12{grid-column:1}.brand small{display:none}}
+  </style>
+</head>
+<body>
+<header>
+  <div class="brand"><b>{{ app_name }}</b><small>Production Web Server · Version {{ version }}</small></div>
+  <div class="head-right"><span id="userLabel">Public</span><button class="btn dark" id="loginBtn" onclick="openLogin()">Login</button><button class="btn danger hidden" id="logoutBtn" onclick="logout()">Logout</button></div>
+</header>
+<div class="layout">
+  <aside>
+    <button class="nav-btn active" data-page="dashboard" onclick="showPage('dashboard',this)">Dashboard</button>
+    <button class="nav-btn" data-page="request" onclick="showPage('request',this)">แจ้งงานซ่อม</button>
+    <button class="nav-btn" data-page="tickets" onclick="showPage('tickets',this)">รายการ Ticket</button>
+    <button class="nav-btn admin-only" data-page="database" onclick="showPage('database',this)">Admin · Database</button>
+  </aside>
+  <main>
+    <section id="page-dashboard" class="page active">
+      <div class="title-row"><div><h1>Repair Dashboard</h1><div class="muted">ข้อมูลอ่านจากฐานข้อมูลส่วนกลาง ไม่ใช้ localStorage</div></div><button class="btn primary" onclick="loadTickets()">Refresh</button></div>
+      <div class="grid">
+        <div class="card metric span4"><span class="label">งานทั้งหมด</span><strong id="mAll">0</strong></div>
+        <div class="card metric span4"><span class="label">กำลังดำเนินการ</span><strong id="mOpen">0</strong></div>
+        <div class="card metric span4"><span class="label">ปิดงานแล้ว</span><strong id="mClosed">0</strong></div>
+        <div class="card span12"><h3>งานล่าสุด</h3><div id="recentTickets" class="table-wrap"></div></div>
+      </div>
+    </section>
+
+    <section id="page-request" class="page">
+      <div class="title-row"><div><h1>แจ้งงานซ่อม / งานสร้าง</h1><div class="muted">ระบบจะสร้างเลข Ticket อัตโนมัติ</div></div></div>
+      <div class="grid">
+        <form class="card span7" onsubmit="createTicket(event)">
+          <label>ประเภทงาน</label><select id="request_type"><option value="repair">งานซ่อม</option><option value="build">งานสร้าง</option></select>
+          <label>รหัสพนักงาน *</label><input id="employee_id" required placeholder="เช่น 70808">
+          <div class="grid"><div class="span6"><label>Area *</label><input id="area" required value="FAC1"></div><div class="span6"><label>Machine *</label><input id="machine" required placeholder="MC-101"></div></div>
+          <label>รายละเอียดปัญหา / งานที่ต้องการ *</label><textarea id="problem" required></textarea>
+          <div class="grid"><div class="span6"><label>เลข Remote</label><input id="remote_no"></div><div class="span6"><label>วันที่ต้องการ</label><input id="required_date" type="date"></div></div>
+          <label>Budget (กรณีงานสร้าง)</label><input id="budget" type="number" min="0" step="0.01">
+          <div class="actions"><button class="btn outline" type="reset">ล้างข้อมูล</button><button class="btn primary" type="submit">บันทึก Ticket</button></div>
+        </form>
+        <div class="card span5"><h3>ขั้นตอนการทำงาน</h3><p>1. ผู้ใช้งานแจ้ง Ticket</p><p>2. Technician Login และรับงาน</p><p>3. Technician บันทึกผลซ่อม</p><p>4. ผู้แจ้งยืนยันงาน</p><p>5. Supervisor ตรวจและปิดงาน</p><hr><p class="muted">บัญชีเริ่มต้น Technician: <span class="code">T001 / 1234</span></p><p class="muted">Supervisor: <span class="code">S001 / 1234</span></p></div>
+      </div>
+    </section>
+
+    <section id="page-tickets" class="page">
+      <div class="title-row"><div><h1>รายการ Ticket</h1><div class="muted">สิทธิ์การแก้ไขขึ้นอยู่กับ Role ที่ Login</div></div><div class="row"><input id="search" style="width:260px" placeholder="ค้นหา" oninput="renderTickets()"><button class="btn primary" onclick="loadTickets()">Refresh</button></div></div>
+      <div class="card"><div id="ticketTable" class="table-wrap"></div></div>
+    </section>
+
+    <section id="page-database" class="page">
+      <div class="title-row"><div><h1>Database Connection</h1><div class="muted">เฉพาะ Admin · ค่า Configuration เก็บใน ProgramData</div></div><button class="btn primary" onclick="loadDbStatus()">Refresh Status</button></div>
+      <div class="grid">
+        <div class="card span5"><h3>Connection Status</h3><div id="dbStatus" class="status-box">กำลังตรวจสอบ...</div><p class="muted">หลังเปลี่ยนฐานข้อมูล ต้อง Restart Server เพื่อให้ระบบเปลี่ยน Engine หลัก</p></div>
+        <form class="card span7" onsubmit="saveDb(event)">
+          <label>Database Type</label><select id="db_type" onchange="toggleDbFields()"><option value="sqlite">SQLite</option><option value="mssql">Microsoft SQL Server</option><option value="postgresql">PostgreSQL</option></select>
+          <div id="remoteDbFields">
+            <div class="grid"><div class="span8"><label>Server / IP</label><input id="db_server" placeholder="localhost หรือ 192.168.1.10"></div><div class="span4"><label>Port</label><input id="db_port" type="number" value="1433"></div></div>
+            <label>Database Name</label><input id="db_database" value="ROVENTO_Repair">
+            <div class="grid"><div class="span6"><label>Username</label><input id="db_username"></div><div class="span6"><label>Password</label><input id="db_password" type="password" placeholder="เว้นว่างเพื่อใช้รหัสเดิม"></div></div>
+            <label>ODBC Driver (SQL Server)</label><input id="db_driver" value="ODBC Driver 17 for SQL Server">
+            <div class="row" style="margin-top:12px"><label style="margin:0"><input id="db_encrypt" type="checkbox" style="width:auto"> Encrypt</label><label style="margin:0"><input id="db_trust" type="checkbox" style="width:auto" checked> Trust Server Certificate</label></div>
+          </div>
+          <div class="actions"><button class="btn outline" type="button" onclick="testDb()">Test Connection</button><button class="btn primary" type="submit">Save Configuration</button></div>
+        </form>
+        <form class="card span5" onsubmit="changePassword(event)"><h3>เปลี่ยนรหัสผ่าน Admin</h3><label>รหัสผ่านใหม่</label><input id="new_password" type="password" minlength="6" required><div class="actions"><button class="btn primary">เปลี่ยนรหัสผ่าน</button></div></form>
+        <div class="card span7"><h3>ตำแหน่งข้อมูล Runtime</h3><p><span class="code">C:\ProgramData\ROVENTO\Repair WebApp</span></p><p class="muted">เก็บ Config, SQLite Database, Logs, Uploads และ Backup แยกจาก Program Files ทำให้ติดตั้งทับแล้วข้อมูลไม่หาย</p></div>
+      </div>
+    </section>
+  </main>
+</div>
+<div id="toast" class="toast"></div>
+<div id="loginModal" class="hidden" style="position:fixed;inset:0;z-index:90;background:#0f172acc;padding:20px;overflow:auto">
+  <form class="card login-card" onsubmit="login(event)"><div class="title-row"><h2 style="margin:0">Login</h2><button type="button" class="btn" onclick="closeLogin()">×</button></div><label>Username</label><input id="login_user" value="rovento" required><label>Password</label><input id="login_password" type="password" value="rovento" required><div class="actions"><button class="btn primary">Login</button></div><p class="muted">Admin เริ่มต้น: rovento / rovento</p></form>
+</div>
+<script>
+let tickets=[];let current={authenticated:false,role:'public',user:'',display_name:''};
+const $=id=>document.getElementById(id);function toast(msg,bad=false){const e=$('toast');e.textContent=msg;e.style.background=bad?'#991b1b':'#0f172a';e.style.display='block';setTimeout(()=>e.style.display='none',2600)}
+async function api(url,opt={}){const r=await fetch(url,{headers:{'Content-Type':'application/json',...(opt.headers||{})},...opt});const d=await r.json().catch(()=>({ok:false,error:'Invalid server response'}));if(!r.ok||d.ok===false)throw new Error(d.error||'Request failed');return d}
+function showPage(name,btn){document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));$('page-'+name).classList.add('active');document.querySelectorAll('.nav-btn').forEach(x=>x.classList.remove('active'));(btn||document.querySelector(`[data-page="${name}"]`)).classList.add('active');if(name==='tickets')loadTickets();if(name==='database')loadDbStatus()}
+function openLogin(){$('loginModal').classList.remove('hidden')}function closeLogin(){$('loginModal').classList.add('hidden')}
+async function login(e){e.preventDefault();try{const d=await api('/api/auth/login',{method:'POST',body:JSON.stringify({username:$('login_user').value,password:$('login_password').value})});closeLogin();await loadMe();toast('Login สำเร็จ: '+d.display_name)}catch(err){toast(err.message,true)}}
+async function logout(){await api('/api/auth/logout',{method:'POST'});await loadMe();showPage('dashboard');toast('Logout แล้ว')}
+async function loadMe(){const d=await api('/api/auth/me');current=d;$('userLabel').textContent=d.authenticated?`${d.display_name} (${d.role})`:'Public';$('loginBtn').classList.toggle('hidden',d.authenticated);$('logoutBtn').classList.toggle('hidden',!d.authenticated);document.querySelectorAll('.admin-only').forEach(x=>x.style.display=d.role==='admin'?'block':'none');renderTickets()}
+async function createTicket(e){e.preventDefault();try{const payload={request_type:$('request_type').value,employee_id:$('employee_id').value,area:$('area').value,machine:$('machine').value,problem:$('problem').value,remote_no:$('remote_no').value,required_date:$('required_date').value,budget:$('budget').value};const d=await api('/api/tickets',{method:'POST',body:JSON.stringify(payload)});e.target.reset();toast('สร้าง '+d.item.ticket_no+' แล้ว');await loadTickets();showPage('tickets')}catch(err){toast(err.message,true)}}
+async function loadTickets(){try{const d=await api('/api/tickets');tickets=d.items;renderMetrics();renderTickets()}catch(err){toast(err.message,true)}}
+function renderMetrics(){const closed=tickets.filter(x=>x.status==='Closed').length;$('mAll').textContent=tickets.length;$('mClosed').textContent=closed;$('mOpen').textContent=tickets.length-closed;$('recentTickets').innerHTML=tableHtml(tickets.slice(0,6),false)}
+function actionHtml(t){if(!current.authenticated)return '';if(['technician','admin'].includes(current.role)){return `<button class="btn primary" onclick="patchTicket(${t.id},{status:'InProgress',assigned_to:'${current.user}'})">รับ/เริ่มงาน</button> <button class="btn warn" onclick="editResult(${t.id})">บันทึกผล</button>`}if(['supervisor','admin'].includes(current.role)){return `<button class="btn success" onclick="patchTicket(${t.id},{status:'Closed'})">ปิดงาน</button> <button class="btn danger" onclick="patchTicket(${t.id},{status:'Rejected'})">Reject</button>`}return ''}
+function tableHtml(rows,actions=true){if(!rows.length)return '<div style="padding:18px" class="muted">ยังไม่มีข้อมูล</div>';return `<table><thead><tr><th>Ticket</th><th>ประเภท</th><th>ผู้แจ้ง</th><th>Area / Machine</th><th>ปัญหา</th><th>Status</th><th>Technician</th><th>วันที่</th>${actions?'<th>Action</th>':''}</tr></thead><tbody>${rows.map(t=>`<tr><td><b>${esc(t.ticket_no)}</b></td><td>${esc(t.request_type)}</td><td>${esc(t.employee_id)}</td><td>${esc(t.area)}<br>${esc(t.machine)}</td><td>${esc(t.problem)}${t.solution?`<hr><b>ผล:</b> ${esc(t.solution)}`:''}</td><td><span class="badge ${t.status}">${esc(t.status)}</span></td><td>${esc(t.assigned_to||'-')}</td><td>${esc(t.created_at.replace('T',' '))}</td>${actions?`<td>${actionHtml(t)}</td>`:''}</tr>`).join('')}</tbody></table>`}
+function renderTickets(){const q=($('search')?.value||'').toLowerCase();const rows=tickets.filter(t=>Object.values(t).join(' ').toLowerCase().includes(q));$('ticketTable').innerHTML=tableHtml(rows,true)}function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+async function patchTicket(id,patch){try{await api('/api/tickets/'+id,{method:'PATCH',body:JSON.stringify(patch)});toast('อัปเดต Ticket แล้ว');loadTickets()}catch(err){toast(err.message,true)}}
+function editResult(id){const solution=prompt('ผลการซ่อม / วิธีแก้ไข');if(solution===null)return;const equipment=prompt('อุปกรณ์ที่ใช้','')??'';const price=prompt('ค่าใช้จ่าย','')??'';patchTicket(id,{status:'WaitingUserConfirm',solution,equipment,price})}
+function toggleDbFields(){const sqlite=$('db_type').value==='sqlite';$('remoteDbFields').classList.toggle('hidden',sqlite)}
+function dbPayload(){return{type:$('db_type').value,server:$('db_server').value,port:Number($('db_port').value),database:$('db_database').value,username:$('db_username').value,password:$('db_password').value,driver:$('db_driver').value,encrypt:$('db_encrypt').checked,trust_certificate:$('db_trust').checked}}
+async function loadDbStatus(){try{const d=await api('/api/admin/db/status');const c=d.config;$('db_type').value=c.type;$('db_server').value=c.server||'';$('db_port').value=c.port||1433;$('db_database').value=c.database||'ROVENTO_Repair';$('db_username').value=c.username||'';$('db_driver').value=c.driver||'ODBC Driver 17 for SQL Server';$('db_encrypt').checked=!!c.encrypt;$('db_trust').checked=!!c.trust_certificate;toggleDbFields();$('dbStatus').className='status-box '+(d.connected?'status-ok':'status-bad');$('dbStatus').innerHTML=d.connected?`<b>Connected — ${esc(c.type.toUpperCase())}</b><br>Database: ${esc(c.database||'SQLite local')}<br>Last saved: ${esc(c.updated_at||'-')}`:`<b>Disconnected</b><br>${esc(d.error)}`}catch(err){toast(err.message,true)}}
+async function testDb(){try{const d=await api('/api/admin/db/test',{method:'POST',body:JSON.stringify(dbPayload())});toast(d.message)}catch(err){toast(err.message,true)}}
+async function saveDb(e){e.preventDefault();try{const d=await api('/api/admin/db/save',{method:'POST',body:JSON.stringify(dbPayload())});toast(d.message);loadDbStatus()}catch(err){toast(err.message,true)}}
+async function changePassword(e){e.preventDefault();try{await api('/api/admin/change-password',{method:'POST',body:JSON.stringify({password:$('new_password').value})});e.target.reset();toast('เปลี่ยนรหัสผ่านแล้ว')}catch(err){toast(err.message,true)}}
+(async()=>{await loadMe();await loadTickets();toggleDbFields()})()
+</script>
+</body>
+</html>
