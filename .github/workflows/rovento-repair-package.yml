@@ -1,0 +1,54 @@
+name: ROVENTO Repair Package
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'rovento_repair_release_20260722/**'
+      - '.github/workflows/rovento-repair-package.yml'
+
+permissions:
+  contents: read
+
+actions:
+
+jobs:
+  validate-and-package:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: rovento_repair_release_20260722
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt
+
+      - name: Validate Python
+        run: |
+          python -m py_compile app.py
+          python -c "import app; print(app.APP_NAME, app.APP_VERSION)"
+
+      - name: Validate package files
+        run: |
+          test -f templates/index.html
+          test -f ROVENTO-Repair-WebApp.spec
+          test -f ROVENTO_Repair_WebApp_Setup.iss
+          test -f 00_BUILD_MENU_CLICK_ME.cmd
+          test -f 04_BUILD_ALL.cmd
+
+      - name: Upload package
+        uses: actions/upload-artifact@v4
+        with:
+          name: ROVENTO_Repair_WebApp_Package_1.0.0
+          path: rovento_repair_release_20260722/
+          if-no-files-found: error
+          retention-days: 7
